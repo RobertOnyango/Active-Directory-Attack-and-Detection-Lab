@@ -1,0 +1,66 @@
+# Sigma coorelation rule that has the logic: if LLMNR (id = 100001) and SMB rogue (id = 100002) happen within 5 minutes for the same src_ip -> raise correlated alert. The first two rules extract the Suricata rules (LLMNR and SMB) by their IDs.
+title: LLMNR Multicast Query Detected
+id: 82eba565-d3d6-4227-8f01-456b21100293
+status: experimental
+description: Detects LLMNR multicast queries on UDP port 5355.
+author: Robert Onyango
+logsource:
+  product: suricata
+  service: ids
+detection:
+  selection:
+    signature_id: 100001 # LLMNR suricata rule ID
+  condition: selection
+fields:
+  - src_ip
+  - dest_ip
+falsepositives:
+  - Normal LLMNR usage (printers, file shares)
+level: high
+tags:
+  - attack.discovery
+  - attack.t1557.001
+---
+title: SMB Connection to Non-DC Host
+id: 7bd2c1bc-5574-44be-9d6b-4ef2a6fd49b7
+status: experimental
+description: Detects SMB sessions to non-DC hosts, possible rogue server.
+author: Robert Onyango
+logsource:
+  product: suricata
+  service: ids
+detection:
+  selection:
+    signature_id: 100002 # SMB suricata rule ID
+  condition: selection
+fields:
+  - src_ip
+  - dest_ip
+falsepositives:
+  - SMB access to legitimate file servers
+level: medium
+tags:
+  - attack.t1557.001
+--- 
+title: LLMNR Poisoning with SMB Authentication Attempt
+id: 657727c5-5e58-45c0-946b-53b75411d762
+status: experimental
+description: Correlates LLMNR multicast queries followed by SMB connections to non-DC hosts.
+author: Robert Onyango
+
+rules:
+  - 82eba565-d3d6-4227-8f01-456b21100293
+  - 7bd2c1bc-5574-44be-9d6b-4ef2a6fd49b7
+
+correlation:
+  type: temporal
+  rules:
+    - 82eba565-d3d6-4227-8f01-456b21100293
+    - 7bd2c1bc-5574-44be-9d6b-4ef2a6fd49b7
+  group-by:
+    - src_ip
+  timespan: 5m
+
+level: high
+tags:
+  - attack.t1557.001

@@ -1,0 +1,21 @@
+#  Sigma rule that detects SMB connections to a unauthorized (not the domain controller) server.
+title: SMB Connection to Non-DC Host
+id: 7bd2c1bc-5574-44be-9d6b-4ef2a6fd49b7
+status: experimental
+description: Detects SMB sessions to non-DC hosts, possible rogue server.
+author: Robert Onyango
+logsource:
+  product: suricata
+  service: ids
+detection:
+  selection:
+    signature_id: 100002
+  condition: selection
+fields:
+  - src_ip
+  - dest_ip
+falsepositives:
+  - SMB access to legitimate file servers
+level: medium
+tags:
+  - attack.t1557.001
