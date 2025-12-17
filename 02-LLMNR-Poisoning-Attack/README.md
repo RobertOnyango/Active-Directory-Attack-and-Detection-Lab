@@ -22,30 +22,24 @@ This lab simulates an **LLMNR poisoning attack** using Responder from a Kali att
 - `/pcap-examples/` → Screenshots of captured LLMNR traffic with sanitization notes
 - `/detection-notes` → Considerations made during detection engineering
 
-## 🔎 Lab Playbook (What I did)
-**Step 1: Setup**
-- Domain Controller + 2 Windows 10 clients
-- Kali Linux attacker with Responder
-- Security Onion for network monitoring
-- Splunk + Sysmon on DC for log analysis
-
-**Step 2: Attack Simulation**
+## 🔎 Step-by-Step Lab (What I did)
+**Step 1: Attack Simulation**
 - Triggered name resolution from victim (`ping the attacker's IP address`)
 - Captured malicious responses + NTLM challenge/response via Responder
 - Cracked the password via Hashcat
 
-**Step 3: Evidence Collection**
+**Step 2: Evidence Collection**
 - Collected PCAPs with Wireshark & tcpdump  
 - Logged Windows Event IDs (4625, 4648) via Splunk  
 - Correlated LLMNR queries with authentication attempts  
 
-**Step 4: Detection and Response**
+**Step 3: Detection and Response**
 - Suricata IDS alert for 224.0.0.252 UDP 5355 traffic
 - Suricata IDS alert for SMB authentication to unauthorized server
 - Sigma alert for LLMNR packets followed by SMB authentication request for the same source IP i.e. Cross-correlation between network events & logon attempts
 - Splunk queries detecting failed NTLM authentications, outbound SMB connections and the correalation.
 
-**Step 5: Enterprise Recommendations**
+**Step 4: Enterprise Recommendations**
 - Disable LLMNR via GPO (`Computer Config > DNS Client > Turn off multicast name resolution`)  
 - Disable NTLM where possible, enforce Kerberos  
 - Monitor for abnormal NTLM authentications in SIEM 
