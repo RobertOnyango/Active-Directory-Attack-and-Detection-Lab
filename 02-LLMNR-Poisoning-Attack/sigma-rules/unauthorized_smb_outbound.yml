@@ -1,0 +1,33 @@
+title: SMB connection to unauthorized host
+description: Detect outbound SMB connections to non-DC host
+id: 49ad710a-bd66-40ae-8acc-3700cf4f5e0e
+status: test
+logsource:
+  product: windows
+  service: sysmon
+detection:
+  selection:
+    EventCode: 3
+    DestinationPort: 445
+  selection2: 
+    DestinationIp: "192.168.4.10"
+  condition: selection1 and not selection2
+level: medium
+tags:
+  - attack.t1021.002
+---
+title: Detect multiple SMB connections to Ip address not DC
+id: 635e3914-50db-4532-b8dc-28974f8a34e3
+status: test
+correlation:
+  type: value_count
+  rules:
+    - 49ad710a-bd66-40ae-8acc-3700cf4f5e0e
+  group_by:
+    - SourceIp
+    - DestinationIp
+    - Image
+  timespan: 10m
+  condition:
+    gte: 2
+    field: DestinationIp

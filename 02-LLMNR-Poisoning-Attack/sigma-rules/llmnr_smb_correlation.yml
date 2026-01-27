@@ -1,0 +1,45 @@
+title: LLMNR multicast queries detected
+description: Detects LLMNR multicast queries oin UDP port 5355 
+id: 4a7f69f6-6f93-47b3-b6ca-10f6e900c4cb
+status: test
+logsource:
+  product: network_connection
+  service: windows
+detection:
+  selection:
+    DestinationPort: 5355
+    DestinationIp: "224.0.0.252"
+  condition: selection
+level: high
+tags:
+  - attack.discovery
+  - attack.t1557.001
+---
+title: SMB connection to non-domain host
+description: Detect outbound SMB connections to non-DC host
+id: 825d0dd4-aac5-467b-8273-a45baf99c647
+status: test
+logsource: 
+  product: network_connection
+  service: windows
+detection:
+  selection1:
+    DestinationIp: "192.168.4.10"
+  selection2:
+    DestinationPort: 445
+  condition: selection2 and not selection1
+level: medium
+tags:
+  - attack.t1557.001
+---
+title: LLMNR Request and SMB connection within a duration
+description: Detects LLMNR and SMB requests within the short time
+id: 1d9a1f49-7282-4c09-b98a-edff6ce08e99
+status: experimental
+correlation:
+  type: temporal
+  rules: 
+    - 4a7f69f6-6f93-47b3-b6ca-10f6e900c4cb
+    - 825d0dd4-aac5-467b-8273-a45baf99c647
+  timespan: 5m
+level: high

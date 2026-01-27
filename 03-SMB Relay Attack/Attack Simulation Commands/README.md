@@ -4,7 +4,7 @@ The following are the commands the attacker used while carrying out this attack:
 
 ### Scanning the network using nmap
 
-The attack has many ways to scan the network e.g. Nessus to see if there are any devices where SMB signing is not enabled. For this example, the attacker used the following nmap command, utilizing an nmap built in script:
+The attacker has many options to scan the network e.g. Nessus to see if there are any devices where SMB signing is not enabled. For this example, the attacker used the following nmap command, utilizing an nmap built in script:
 
 ***nmap -p 445 --script smb2-security-mode.nse 192.168.4.0/24***
 

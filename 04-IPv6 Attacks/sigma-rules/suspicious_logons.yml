@@ -1,0 +1,18 @@
+title: Suspicious NTLM Logons
+description: Detect successfull logons in the domain from non-domain hosts via the network
+id: ab1cafa7-250a-4123-aff6-aefac1533dbc
+status: test
+logsource:
+  product: windows
+  service: security
+detection:
+  selection1:
+    EventCode: 4624
+    Logon: 3
+    Authentication_Package: NTLM
+  selection2:
+    Source_Network_Address:
+     - "192.168.4.0/24"
+     - "127.0.0.1"
+  condition: selection1 and not selection2
+level: high
