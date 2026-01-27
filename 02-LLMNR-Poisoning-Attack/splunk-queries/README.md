@@ -4,32 +4,31 @@ This file contains an exerpt of the important Splunk queries that I used to inve
 
 ## Investigations
 
-### Confirm NTLM handshakes
+#### Confirm NTLM handshakes
 
-index='windowseventlog' Authentication_Package=NTLM
+```index='windowseventlog' Authentication_Package=NTLM```
 
-### Confirm successfull NTLM authentication (Event ID 4624)
+#### Confirm successful NTLM authentication (Event ID 4624)
 
-index='windowseventlog' Logon_Type=3 EventCode=4624
-| stats count by Source_Network_Address
+```index='windowseventlog' Logon_Type=3 EventCode=4624 | stats count by Source_Network_Address```
 
-### Confirm if there was a spike in unsuccessful NTLM authentications
+#### Confirm if there was a spike in unsuccessful NTLM authentications
 
-index='windowseventlog' Logon_Type=3 EventCode=4625
-| stats count by ComputerName
+```index='windowseventlog' Logon_Type=3 EventCode=4625 | stats count by ComputerName```
 
-### Confirm if any logons were attempted using explicit credentials (Even ID 4648)
+#### Confirm if any logons were attempted using explicit credentials (Even ID 4648)
 
-index='windowseventlog' EventCode=4648
+```index='windowseventlog' EventCode=4648```
 
-### Investigate suspicious IP activity
+#### Investigate suspicious IP activity
 
-index='windowseventlog' EventCode=4648 Network_Address="
-192.168.1.11"
+```index='windowseventlog' EventCode=4648 Network_Address="192.168.1.11"```
 
 ## Alerts
 
-### LLMNR - Detect malicious authentication
+Investigation of the observed activity resulted in the following three alerts being added to the detection library:
+
+#### 1. LLMNR - Detect malicious authentication
 
 The rule will alert on authentication attempts that trigger Event ID 4648 whereby the target machine receiving the credentials is not the domain controller or processes within the host. 
 
@@ -42,7 +41,7 @@ index="windowseventlog" EventCode=4648 NOT (Network_Address IN ("127.0.0.1", "19
 | search value_count >= 2
 ```
 
-### Outbound sysmon SMB Connections
+#### 2. Outbound sysmon SMB Connections
 
 Within 10 minutes, detect 2 or more SMB connections from the same SourceIp + Image to non-DC IPs over port 445. 
 
@@ -55,7 +54,10 @@ source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=3 Destinatio
 | search value_count >= 2
 ```
 
-#### Improved alert in Splunk
+#### 2.1. Improved alert in Splunk
+
+Below is an improvement of the rule above, adding more table fields to the result in Splunk.
+
 ```
 source="WinEventLog:Microsoft-Windows-Sysmon/Operational"
 EventCode=3
@@ -70,7 +72,8 @@ NOT DestinationIp="192.168.4.10"
 | sort - smb_connection_count
 ```
 
-### LLMNR -> SMB correlation
+#### 3. LLMNR -> SMB correlation
+
 Filter out any LLMNR traffic and all SMB traffic not sent to the Domain Controller within a span of 5m
 
 ```
