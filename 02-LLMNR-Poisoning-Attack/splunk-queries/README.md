@@ -6,83 +6,52 @@ This file contains an exerpt of the important Splunk queries that I used to inve
 
 #### Confirm NTLM handshakes
 
-```index='windowseventlog' Authentication_Package=NTLM```
+```index='windowseventlogs' Authentication_Package=NTLM```
 
 #### Confirm successful NTLM authentication (Event ID 4624)
 
-```index='windowseventlog' Logon_Type=3 EventCode=4624 | stats count by Source_Network_Address```
+```index='windowseventlogs' Logon_Type=3 EventCode=4624 | stats count by Source_Network_Address```
 
 #### Confirm if there was a spike in unsuccessful NTLM authentications
 
-```index='windowseventlog' Logon_Type=3 EventCode=4625 | stats count by ComputerName```
+```index='windowseventlogs' Logon_Type=3 EventCode=4625 | stats count by ComputerName```
 
 #### Confirm if any logons were attempted using explicit credentials (Even ID 4648)
 
-```index='windowseventlog' EventCode=4648```
+```index='windowseventlogs' EventCode=4648```
 
 #### Investigate suspicious IP activity
 
-```index='windowseventlog' EventCode=4648 Network_Address="192.168.1.11"```
+```index='windowseventlogs' EventCode=4648 Network_Address="192.168.1.11"```
 
 ## Alerts
 
 Investigation of the observed activity resulted in the following three alerts being added to the detection library:
 
-#### 1. LLMNR - Detect malicious authentication
+#### 1. Detect malicious authentication
 
-The rule will alert on authentication attempts that trigger Event ID 4648 whereby the target machine receiving the credentials is not the domain controller or processes within the host. 
+During normal LLMNR attacks, the victim does not explicitly supply credentials to the rogue server, rather, Windows auto-uses the current logon session. However, we do see that the event ID 4648 is generated on Desktop-1, by an IP address that's neither the expected loopback addresses IPv4 127.0.0.1 and IPv6 ::1 nor the management server, the Domain Controller 192.168.4.10. This indicates the the victim user entered his/her credentials, an edge case that we must account and prepare for.
+
+Event ID 4648 is triggered on the machine that is supplying the credentials i.e. ComputerName field. These details are also captured in the 'Account whose credentials were used' section. 
+
+The Network_Address and the Subject section, where the Account_Name field is located, is the UID of the host whose process requested the credentials. In our case, this the rogue server the victim is trying to connect to.
+
+The premise of this rule is to answer the question: Should our cleint machines be supplying credentials to the network address?
 
 ```
-index="windowseventlog" EventCode=4648 NOT (Network_Address IN ("127.0.0.1", "192.168.4.10"))
-
-| bin _time span=30m
-| stats dc(ComputerName) as value_count by _time
-
-| search value_count >= 2
+index="windowseventlogs" EventCode=4648 Network_Address != "127.0.0.1" Network_Address != "-" Network_Address != "192.168.4.10"
+| stats count by ComputerName, Account_Name, Network_Address
+| search count >= 1
 ```
 
 #### 2. Outbound sysmon SMB Connections
 
-Within 10 minutes, detect 2 or more SMB connections from the same SourceIp + Image to non-DC IPs over port 445. 
+For each 10-minute window and each source IP, tell me how many unique destinations were contacted and what those destinations were. SMB connections need to be consistent with the role-assigned to the user identity. In the lab, if the destination of an SMB connection is a workstation, this indicates abnormal activity. 
 
 ```
-source="WinEventLog:Microsoft-Windows-Sysmon/Operational" EventCode=3 DestinationPort=445 NOT DestinationIp="192.168.4.10"
-
+index="sysmon" EventCode=3 DestinationPort=445 DestinationIp!="192.168.4.10"
 | bin _time span=10m
-| stats dc(DestinationIp) as value_count by _time
-
-| search value_count >= 2
-```
-
-#### 2.1. Improved alert in Splunk
-
-Below is an improvement of the rule above, adding more table fields to the result in Splunk.
-
-```
-source="WinEventLog:Microsoft-Windows-Sysmon/Operational"
-EventCode=3
-DestinationPort=445
-NOT DestinationIp="192.168.4.10"
-
-| bin _time span=10m
-| stats count as smb_connection_count 
-        by _time SourceIp DestinationIp Image
-| where smb_connection_count >= 2
-| table _time SourceIp DestinationIp Image smb_connection_count
-| sort - smb_connection_count
-```
-
-#### 3. LLMNR -> SMB correlation
-
-Filter out any LLMNR traffic and all SMB traffic not sent to the Domain Controller within a span of 5m
-
-```
-index="windowseventlogs" EventCode=4648 OR index=Sysmon EventCode=3 DestinationPort=445
-| eval stage=case(EventCode=4648,"auth", EventCode=3,"smb")
-
-index="windowseventlogs" index="sysmon" (DestinationIp="224.0.0.252 AND DestinationPort=5355) AND (DestiantionPort=445 AND DestinationIp!="192.168.4.10")
-| bin _time span=5m
-| stats dc(event_type) as event_type_count by _time
-
-| search event_type_count >= 2
+| stats dc(DestinationIp) as unique_destinations, values(DestinationIp) as DestinationIps by _time, SourceIp
+| where unique_destinations >=2
+| table _time, SourceIp, unique_destinations, DestinationIps
 ```

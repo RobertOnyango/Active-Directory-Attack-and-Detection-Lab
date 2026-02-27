@@ -2,8 +2,8 @@
 
 ## Detection Approach
 - **Network Layer:**  
-  - IDS/IPS (Suricata) rules flag UDP traffic on ports 5355 (LLMNR) 
-  - Look for unexpected hosts answering queries  
+  - IDS (Suricata) rules flag UDP traffic on ports 5355 (LLMNR) 
+  - Look for unexpected hosts answering queries 
 
 - **Host Layer (Windows Event Logs + Sysmon):**  
   - Event ID **4625** (failed logon)  

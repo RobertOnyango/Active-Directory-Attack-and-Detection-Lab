@@ -20,18 +20,18 @@ index="windowseventlogs" (EventCode=4768 OR EventCode=4776)
 source="WinEventLog:Security" EventCode=4624 Logon=3 Authentication_Package="NTLM" NOT (Source_Network_Address IN ("192.168.4.0/24", "127.0.0.1"))
 ```
 
-#### 2. Workstation computer account resets another account’s password (Event 4724)
+#### 2. Workstation computer account creates a new computer object account’s password (Event 4741)
 
-Computer accounts do not reset other user accounts unless delegation / ACLs are abused.
+Non provisioning computer accounts should not create computer accounts unless during domain  join. The differences in the Subject_Account_Name and New_Computer_Account_Name is the alert riaser.
+
 
 ```
-index=windows*
-source="WinEventLog:Security"
-EventCode=4724
-| eval is_computer_account=if(match(Subject_Account_Name, "\$$"), "true", "false")
-| where is_computer_account="true"
-| where Subject_Account_Name != Target_Account_Name
-| table _time ComputerName Subject_Account_Name Subject_Account_Domain Target_Account_Name Target_Account_Domain
+index="windowseventlogs"
+EventCode=4741
+| eval subject_is_computer=if(match(Subject_Account_Name, "\$$"), "true", "false")
+| where subject_is_computer="true"
+| where Subject_Account_Name != New_Computer_Account_Name
+| table _time ComputerName Subject_Account_Name New_Computer_Account_Name Subject_Account_Domain
 | sort -_time
 ```
 
@@ -40,8 +40,7 @@ EventCode=4724
 Broad rule that should be used in context while correlating rules.
 
 ```
-index=windows*
-source="WinEventLog:Security"
+index="windowseventlogs"
 EventCode=4720
 | where Subject_Account_Name IN ("Administrator", "Domain Admins")
 | table _time ComputerName Subject_Account_Name Target_Account_Name Target_SID
@@ -52,8 +51,7 @@ EventCode=4720
 #### 4. User creation → network logon milliseconds later (NTLM relay / credential abuse)
 
 ```
-index=windows*
-source="WinEventLog:Security"
+index="windowseventlogs"
 (EventCode=4720 OR EventCode=4624)
 | eval event_type=case(
     EventCode=4720, "user_created",
