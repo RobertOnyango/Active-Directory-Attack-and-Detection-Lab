@@ -42,7 +42,7 @@ The rule will generate one alert per host (by_src) within a period of 30 seconds
 
 ```
 alert tcp any any -> !192.168.4.10 445 (
-    msg:"Possible SMB connection to non-domain host server"; flowbits:isset,llmnr_observed;
+    msg:"Possible SMB connection to non-domain host server after LLMNR detected"; flowbits:isset,llmnr_observed;
     flow:to_server,established;
     threshold:type both, track by_src, count 1, seconds 30;
     sid:100003;
