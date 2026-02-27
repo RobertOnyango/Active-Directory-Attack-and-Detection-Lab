@@ -6,10 +6,10 @@ logsource:
   product: windows
   service: sysmon
 detection:
-  selection:
+  selection1:
     EventCode: 3
     DestinationPort: 445
-  selection2: 
+  selection2:
     DestinationIp: "192.168.4.10"
   condition: selection1 and not selection2
 level: medium
