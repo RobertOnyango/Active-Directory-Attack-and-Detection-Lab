@@ -3,13 +3,13 @@
 ## Detection Approach
 - **Network Layer:**  
   - IDS (Suricata) rules flag UDP traffic on ports 5355 (LLMNR) 
-  - Look for unexpected hosts answering queries 
+  - Look for unexpected hosts responding to LLMNR requests.
+  - Confirm SMB connection to unauthorized servers.
 
 - **Host Layer (Windows Event Logs + Sysmon):**  
-  - Event ID **4625** (failed logon)  
-  <!-- - Event ID **4776** (NTLM authentication attempt) -->
-  - Event ID **4648** (explicit credentials)  
-  - Sysmon **Event ID 3** (NetworkConnect) to attacker host  
+  - Event ID **4625** (Suspicious failed logons) 
+  - Event ID **4648** (Use of explicit credentials by unexpected source IP)  
+  - Sysmon **Event ID 3** (NetworkConnect) by attacker host to port 445.
 
 - **Correlation Logic:**  
   - LLMNR query → NTLM auth attempt within 10–15 minutes  
@@ -19,7 +19,7 @@
 
 ## False Positives & Tuning
 - Some IoT devices or printers use multicast name resolution legitimately.  
-- Whitelist known devices to reduce noise i.e. Domain Controller
+- Whitelist known devices to reduce noise i.e. Domain Controllers, Utility Servers.
 - Raise priority only if combined with NTLM authentication events.  
 
 ---
