@@ -10,6 +10,7 @@ The rule will be very loud in enterprise environments. For this lab scenario, it
 alert udp any any -> 224.0.0.252 5355 (
     msg:"LLMNR multicast query detected";
     sid:100001;
+    priority:2;
     rev:1;
 )
 ```
@@ -46,6 +47,7 @@ alert tcp any any -> !192.168.4.10 445 (
     flow:to_server,established;
     threshold:type both, track by_src, count 1, seconds 30;
     sid:100003;
+    priority:1;
     rev:1;
 )
 ```
@@ -57,8 +59,9 @@ We alert on SMB traffic to IPs not within the internal range. This could be to e
 ```
 alert tcp any any -> !192.168.4.0/24 445 (
     msg:"SMB traffic to unknown server not in internal network";
-    flow: to_server,established;
-    sid: 200001;
+    flow:to_server,established;
+    sid:200001;
+    priority:2;
     rev:1;
 )
 ```
