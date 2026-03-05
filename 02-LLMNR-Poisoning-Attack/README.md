@@ -37,7 +37,7 @@ This lab simulates an **LLMNR poisoning attack** using Responder from a Kali att
 - Suricata IDS alert for 224.0.0.252 UDP 5355 traffic
 - Suricata IDS alert for SMB authentication to unauthorized server
 - Sigma alert for LLMNR packets followed by SMB authentication request for the same source IP i.e. Cross-correlation between network events & logon attempts
-- Splunk queries detecting failed NTLM authentications, outbound SMB connections and the correalation.
+- Splunk queries detecting failed NTLM authentications, and outbound SMB connections.
 
 **Step 4: Enterprise Recommendations**
 - Disable LLMNR via GPO (`Computer Config > DNS Client > Turn off multicast name resolution`)  
