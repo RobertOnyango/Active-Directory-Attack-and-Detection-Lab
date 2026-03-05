@@ -21,10 +21,11 @@ The attack was simulated in an Active Directory environment and monitored with:
 
 ## 🔎 Step-by-Step Lab (What I did)
 **Step 1: Attack Simulation**
-- Captured NTLM authentication via prior LLMNR poisoning
-- Relayed NTLM authentication to a second Windows host over SMB
-- Successfully authenticated without cracking credentials
-- Established SMB session and accessed IPC$ share
+- Victim machine attempts SMB authentication to a rogue server.
+- Attacker intercepts the NTLM authentication.
+- Attacker relays the authentication to the target Windows host over SMB.
+- Target successfully authenticates the attacker without cracking the hashes.
+- Attacker is granted access via an established SMB session and accessed IPC$ share
 
 **Step 2: Evidence Collection**
 - Captured SMB2 traffic showing:
