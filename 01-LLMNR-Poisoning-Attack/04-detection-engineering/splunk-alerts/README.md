@@ -1,6 +1,8 @@
 # Splunk Alert Rules
 
-Investigation of the observed activity in the domain and the artifacts subsequently collected resulted in the following two alerts being added to the detection library:
+Investigation of the observed activity in the domain and the artifacts subsequently collected resulted in the following two alerts being added to the detection library.
+
+---
 
 ## 1. Detect authentication to unauthorized servers using explicit credentials
 
@@ -18,6 +20,8 @@ index="windowseventlogs" EventCode=4648 Network_Address != "127.0.0.1" Network_A
 | search count >= 1
 ```
 
+---
+
 ## 2. Alert on outbound sysmon SMB Connections
 
 For each 10-minute window and each source IP, tell me how many unique destinations were contacted and what those destinations were. SMB connections need to be consistent with the role-assigned to the user identity. In the lab, if the destination of an SMB connection is a workstation, this indicates abnormal activity. 
@@ -29,3 +33,5 @@ index="sysmon" EventCode=3 DestinationPort=445 DestinationIp!="192.168.4.10"
 | where unique_destinations >=2
 | table _time, SourceIp, unique_destinations, DestinationIps
 ```
+
+---
