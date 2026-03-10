@@ -18,7 +18,7 @@ The results of these investigations helped identify the telemetry artifacts used
 
 ## Investigation Queries
 
-### Where was NTLM used as the authentication method
+### Where was NTLM used as the authentication method?
 
 ```
 index="windowseventlogs" Authentication_Package=NTLM

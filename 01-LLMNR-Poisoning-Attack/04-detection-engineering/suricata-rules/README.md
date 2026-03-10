@@ -1,8 +1,8 @@
-## Suricata Rules - LLMNR Poisoning
+# Suricata Detection Rules
 
-This file contains the suircata rules used to detect LLMNR poisoning in this lab
+This file contains the suircata rules that will raise alerts when the symptoms of LLMNR poisoning are detected.
 
-#### Baseline rule that will alert if LLMNR multicast traffic is detected in the network
+## Baseline rule that will alert if LLMNR multicast traffic is detected in the network
 
 The rule will be very loud in enterprise environments. For this lab scenario, it works for illustration purposes.
 
@@ -15,7 +15,7 @@ alert udp any any -> 224.0.0.252 5355 (
 )
 ```
 
-#### 'Silent' Rule that sets a flowbit maker for correlation, SMB traffic observed within a short period after LLMNR traffic
+## 'Silent' Rule that sets a flowbit maker for correlation, SMB traffic observed within a short period after LLMNR traffic
 
 LLMNR traffic is not necessarily bad in your environment, escpecially if LLMNR is not explicitly disabled. The rule wil detect the traffic and set the flowbit 'llmnr_observed' but will not raise an alert.
 
@@ -31,7 +31,7 @@ alert udp any any -> 224.0.0.252 5355 (
 
 **NOTE**: LLMNR multicast addrress = 224.0.0.252, UDP port 5355
 
-#### Chained detection rule that will alert when there is an SMB handshake occurence with a unauthorized server.
+## Chained detection rule that will alert when there is an SMB handshake occurence with a unauthorized server.
 
 This rule follows the above rule and will alert when LLMNR traffic is observed, then SMB traffic observed shortly aftwerwards. 
 
@@ -52,7 +52,7 @@ alert tcp any any -> !192.168.4.10 445 (
 )
 ```
 
-#### Rule that will alert on SMB traffic to servers whose IP is not within the internal IP address space
+## Rule that will alert on SMB traffic to servers whose IP is not within the internal IP address space
 
 We alert on SMB traffic to IPs not within the internal range. This could be to external IPs that signals network scanning, 
 

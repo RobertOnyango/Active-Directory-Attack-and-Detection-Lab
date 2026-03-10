@@ -16,5 +16,5 @@ The NTLM authentication sequence is visible within the SMB session setup process
 2. The attacker responded with an NTLM challenge. (Packet No. 108)
 3. The victim sent an NTLM authentication response. (Packet No. 109)
 
-This authentication sequence occurs when the victim system attempts to authenticate to the attacker-controlled machine.
+This authentication sequence occurs when the victim system attempts to authenticate to the attacker-controlled machine, making **NTLM authentication to unauthorized systems** the second artifact.
 
