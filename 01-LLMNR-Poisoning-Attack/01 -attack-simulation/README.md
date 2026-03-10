@@ -1,4 +1,4 @@
-## ATTACKER COMMANDS
+## Attacker Commands
 
 The following are the commands the attacker used while carrying out this attack:
 

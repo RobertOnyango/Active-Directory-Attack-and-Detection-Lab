@@ -16,7 +16,9 @@ The lab also suggests ways in which I, as a Security Analyst, can use AI and LLM
 - Kali Linux (attacker machine)
 
 ## 🛡️ Attacks Simulated
-- LLMNR Poisoning (Responder) @ `/LLMNR-Poisoning-Attack`/
+- LLMNR Poisoning (Responder) @ `01-LLMNR-Poisoning-Attack`/
+- SMB Relay @ `/02-SMB-Relay-Attack/`
+- IPv6 Attacks @ `/03-IPv6-MiTM-Attacks/`
 <!--
 - Pass-the-Hash
 - Kerberoasting
