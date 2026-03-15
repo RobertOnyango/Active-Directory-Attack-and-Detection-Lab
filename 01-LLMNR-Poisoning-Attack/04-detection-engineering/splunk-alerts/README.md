@@ -24,7 +24,7 @@ index="windowseventlogs" EventCode=4648 Network_Address != "127.0.0.1" Network_A
 
 ## 2. Alert on outbound sysmon SMB Connections
 
-For each 10-minute window and each source IP, tell me how many unique destinations were contacted and what those destinations were. SMB connections need to be consistent with the role-assigned to the user identity. In the lab, if the destination of an SMB connection is a workstation, this indicates abnormal activity. 
+For each 10-minute window and each source IP, tell me how many unique destinations were contacted and what those destinations were. SMB connections need to be consistent with the role-assigned to the user identity. In the lab, if the destination of an SMoutbpoB connection is a workstation, this indicates abnormal activity. 
 
 ```
 index="sysmon" EventCode=3 DestinationPort=445 DestinationIp!="192.168.4.10"

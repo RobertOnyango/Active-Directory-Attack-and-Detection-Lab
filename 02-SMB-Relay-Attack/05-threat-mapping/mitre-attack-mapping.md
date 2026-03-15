@@ -1,10 +1,10 @@
 # MITRE ATT&CK Mapping
 
-| Tactic | Technique | ID | Description |
-|------|------|------|------|
-| Credential Access | Adversary-in-the-Middle | T1557 | Intercepting authentication traffic |
-| Credential Access | LLMNR/NBT-NS Poisoning | T1557.001 | Spoofing name resolution responses |
-| Credential Access | Forced Authentication | T1187 | Forcing a system to authenticate to an attacker |
-| Credential Access | OS Credential Dumping (Potential Follow-on) | T1003 | NTLM hashes may later be used for credential attacks |
+The SMB Relay attack abuses **NTLM authentication** to relay captured credentials to another service, allowing attackers to authenticate as the victim without cracking the password.
 
----
+| MITRE Tactic | Technique | ID | Description |
+|---------------|------------|----|-------------|
+| Credential Access | Adversary-in-the-Middle | T1557 | The attacker intercepts authentication traffic (LLMNR/NBT-NS poisoning) and relays NTLM authentication to another service. |
+| Credential Access | Forced Authentication | T1187 | The attacker forces a system to authenticate to the attacker-controlled machine. |
+| Lateral Movement | Remote Services (SMB/Windows Admin Shares) | T1021.002 | Relayed NTLM authentication is used to access SMB shares or execute commands on remote machines. |
+| Persistence / Privilege Escalation | Valid Accounts | T1078 | The attacker uses relayed legitimate credentials to gain unauthorized access. |

