@@ -45,7 +45,7 @@ The attack was performed using Responder from a Kali Linux machine.
 
 1. Victim attempts to resolve a hostname.
 2. DNS resolution fails.
-3. Victim sends an LLMNR broadcast request.
+3. Victim sends an LLMNR multicast request.
 4. Attacker responds pretending to be the requested host.
 5. Victim attempts NTLM authentication to the attacker.
 6. NTLM challenge/response hashes are captured.
@@ -64,6 +64,7 @@ Examples include:
 - Rogue LLMNR responses from attacker
 - SMB authentication attempts to attacker host
 - Windows authentication event logs
+- Network connections to unexpected hosts on **port 445**
 
 Artifacts were captured using:
 
@@ -114,16 +115,26 @@ All detection logic is available in the **detection-engineering/** directory.
 
 Recommended mitigations include:
 
-- Disable LLMNR via Group Policy  
-  `Computer Configuration → Administrative Templates → Network → DNS Client → Turn off multicast name resolution`
+- Disable **LLMNR** via Group Policy  
+  `Computer Configuration → Administrative Templates → Network → DNS Client → Turn off multicast name resolution`.
+- Disable **NetBIOS over TCP/IP** where possible or not required.
+- Enforce **SMB signing** to prevent NTLM relay attacks.
+- Prefer **Kerberos authentication** over NTLM.
+- Monitor abnormal NTLM authentication attempts in SIEM platforms.
+- Educate users: avoid clicking on “unknown shares” or non-existent paths.
 
-- Disable NetBIOS where possible
+---
 
-- Enforce SMB signing
+## 🧑‍💻 Why This Matters
 
-- Prefer Kerberos authentication over NTLM
+LLMNR poisoning is widely used in real-world environments to capture credentials and enable follow-on attacks such as SMB relay.
 
-- Monitor abnormal NTLM authentication attempts in SIEM platforms
+Being able to simulate and detect this attack demonstrates the ability to:
+
+- Understand attacker techniques
+- Identify security telemetry across network and endpoint sources
+- Perform threat hunting and incident investigation
+- Design detection logic for SIEM and SOC environments
 
 ---
 

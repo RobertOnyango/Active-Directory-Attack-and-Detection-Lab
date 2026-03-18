@@ -18,26 +18,17 @@ These artifacts may occur when a victim machine attempts NTLM authentication to 
 
 ---
 
-## Detection Strategy
+## Corelation Strategy 
 
-The goal of this detection is to identify systems attempting LLMNR name resolution followed by NTLM authentication to the responding host.
+The goal of this detection is to identify systems attempting LLMNR name resolution followed by NTLM authentication to the responding host. 
+
+Successful detection requires correlation across network and host telemetry.
 
 Key behavioral pattern:
 
-LLMNR request (UDP 5355)
-→ Rogue responder answers query
+→ LLMNR request (UDP 5355)
+→ Rogue responder answers query (LLMNR response)
 → Victim attempts SMB authentication to responder (port 445)
-
----
-
-## Correlation Logic
-
-Detection becomes stronger when events are correlated across network and host telemetry:
-
-LLMNR Query  
-→ Rogue LLMNR Response  
-→ SMB Authentication Attempt  
-→ Windows Authentication Events
 
 Typical timeline:
 
@@ -54,23 +45,3 @@ If an SMB session is successfully established with the responding host, escalate
 - Increase alert severity only when LLMNR activity is correlated with NTLM authentication attempts.
 
 ---
-
-## Remediation
-- Disable **LLMNR** via Group Policy.
-- Disable **NetBIOS over TCP/IP** where not required.
-- Enforce **SMB signing** to prevent NTLM relay attacks.
-- Prefer **Kerberos authentication** over NTLM wherever possible.
-- Monitor abnormal NTLM authentication patterns in SIEM platforms. 
-- Educate users: avoid clicking on “unknown shares” or non-existent paths  
-
----
-
-## Why This Matters
-LLMNR poisoning is widely used in real-world environments to capture credentials and enable follow-on attacks such as SMB relay.
-
-Being able to simulate and detect this attack demonstrates the ability to:
-
-- Understand attacker techniques
-- Identify security telemetry across network and endpoint sources
-- Perform threat hunting and incident investigation
-- Design detection logic for SIEM and SOC environments
