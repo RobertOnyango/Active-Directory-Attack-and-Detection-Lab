@@ -42,7 +42,7 @@ The transition from **IPC$ to ADMIN$** is a strong indicator of SMB relay activi
 
 ---
 
-## Key Network Artifacts
+## Summary of Key Network Artifacts
 
 | Artifact | Description |
 |--------|-------------|
@@ -52,14 +52,3 @@ The transition from **IPC$ to ADMIN$** is a strong indicator of SMB relay activi
 | Sequential SMB sessions | Victim → Attacker → Target relay pattern |
 
 ---
-
-## Summary
-
-Suricata telemetry captured the following artifacts during the attack:
-
-- SMB authentication attempt from the victim to the attacker
-- IPC$ share access during the NTLM authentication process
-- New SMB session from the attacker to the relay target
-- Administrative share access (ADMIN$)
-
-These artifacts provide network-level evidence of SMB relay behavior within the monitored environment.

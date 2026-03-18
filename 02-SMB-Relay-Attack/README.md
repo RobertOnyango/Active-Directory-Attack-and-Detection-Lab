@@ -51,7 +51,7 @@ The attack was performed using Responder from a Kali Linux machine.
 5. Victim attempts NTLM authentication to the attacker.
 6. Attacker captures the authentication attempt and relays it to another Windows host.
 7. The target system authenticates the attacker as the victim.
-8. The attacker gains access to the target system's SMB service (IPC$ share).
+8. The attacker gains access to the target system's SMB service (ADMIN$ share).
 
 ---
 
@@ -63,17 +63,16 @@ The attack generates several observable artifacts across network and endpoint te
 
 Examples include:
 
-- LLMNR multicast traffic (UDP 5355)
-- SMB authentication attempts between victim and attacker
-- NTLM authentication exchanges within SMB session setup (NTLMSSP packets)
-- Windows authentication events associated with NTLM network logons
+- LLMNR multicast traffic (UDP 5355).
+- SMB authentication attempts between victim and attacker.
+- NTLM authentication exchanges within SMB session setup (NTLMSSP packets).
+- Windows authentication events associated with NTLM network logons.
 
 Artifacts were analyzed using:
 
-- Wireshark packet captures
-- Suricata IDS alerts
-- Windows Event Logs
--Splunk SIEM queries
+- Suricata IDS alerts.
+- Splunk SIEM queries.
+- Wireshark packet captures.
 
 Screenshots and analysis are available in the **telemetry-analysis/** directory.
 
@@ -85,10 +84,10 @@ Investigation was performed using manual analysis across network telemetry and e
 
 Examples include:
 
-- Wireshark analysis of SMB session setup and NTLM authentication traffic
-- Identification of identical NTLM authentication blobs reused across separate SMB sessions
-- Splunk queries detecting NTLM-based network logons (Event ID 4624 – Logon Type 3)
-- Identification of SMB tree connect requests to \<target>\IPC$
+- Wireshark analysis of SMB session setup and NTLM authentication traffic.
+- Identification of identical NTLM authentication blobs reused across separate SMB sessions.
+- Splunk queries detecting NTLM-based network logons (Event ID 4624 – Logon Type 3).
+- Identification of SMB tree connect requests to \<target>\IPC$.
 
 Investigation queries and analysis steps are documented in the **threat-hunting-and-investigation/** directory.
 
@@ -103,11 +102,8 @@ These include:
 ### Suricata Rules
 Detection of suspicious SMB authentication activity involving unauthorized hosts.
 
-### Sigma Rules
-Correlation of NTLM authentication events with unusual SMB connections.
-
 ### Splunk Detection Queries
-Detection of NTLM network logons from unexpected systems.
+Detection of NTLM network logons from unexpected systems and succeeding post-exploitation activities.
 
 All detection logic is available in the **detection-engineering/** directory.
 
@@ -117,42 +113,41 @@ All detection logic is available in the **detection-engineering/** directory.
 
 Recommended mitigations include: 
 
-- Enforce SMB signing on all servers
-- Restrict or disable NTLM where possible
-- Prefer Kerberos authentication wherever possible
-- Monitor NTLM authentication usage in SIEM platforms
-- Detect abnormal SMB authentication behavior across the network
+- Enforce **SMB signing** on all servers.
+- Restrict or **disable NTLM authentication** where possible.
+- Prefer **Kerberos authentication** wherever possible.
+- **Monitor NTLM authentication** usage in SIEM platforms.
+- Detect **abnormal SMB authentication behavior** across the network.
 
 ---
 
-## Why This Matters
+## 🧑‍💻 Why This Matters
 
-SMB relay attacks are particularly dangerous because they:
+SMB relay attacks are particularly dangerous in enterprise environments because they:
 
-- Do **not require password cracking**
-- Can bypass many endpoint-based detections
+- Do not require password cracking.
+- Can bypass many endpoint-based detections.
 - Exploit legitimate authentication mechanisms
 
 As a result, effective detection often relies on **network telemetry and authentication context analysis** rather than traditional exploit signatures.
 
 ---
 
-## Lab Takeaways
+## 💻 Lab Takeaways
 
 This lab demonstrates several real-world detection challenges:
 
-- The lack of explicit exploit indicators in Windows logs
-- The importance of **multi-layer telemetry correlation**
-- The need for **network-level visibility** to detect credential relay attacks
+- The lack of explicit exploit indicators in Windows logs i.e. **host telemtry alone is insufficient** for indepth investigation of such attacks.
+- The importance of **multi-layer telemetry correlation**.
+- The need for **network-level visibility** to detect credential relay attacks.
 
 ---
 
-## Next Steps
+## 🔜 Next Steps
 This repository is part of a growing Active Directory attack & detection series, including:
 - LLMNR Poisoning
 - SMB Relay (this lab)
+- IPv6 MiTM
 - Pass-the-Hash
 - Kerberoasting
 - Lateral Movement
-
-Each attack follows the same structure for repeatable detection engineering and SOC workflows.

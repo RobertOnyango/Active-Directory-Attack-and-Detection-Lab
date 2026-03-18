@@ -16,7 +16,7 @@ The sequence appears as:
 
 ```SYN → SYN/ACK → RST```
 
-This pattern indicates that the rogue host attempted to initiate a connection but immediately reset the session after the target responded.
+This pattern indicates that the rogue host attempted to initiate a connection but immediately reset the session after the target responded. This is evidence of **network reconnaissance**.
 
 ---
 
@@ -56,23 +56,21 @@ At **packet 53**, Wireshark shows the **NTLMSSP_AUTH message**, which contains t
 
 This packet confirms that the victim machine **192.168.4.16 sent its NTLM authentication data to the attacker machine 192.168.1.11**.
 
-At this point, the attacker has successfully captured the victim's authentication material.
+At this point, it is safe to assume, the attacker has successfully captured the victim's authentication material.
 
 ---
 
 ## Relay to the Target System
 
-Immediately after obtaining the NTLM authentication blob, the attacker initiates a **new SMB session toward the target machine 192.168.4.12**.
+Immediately after obtaining the NTLM authentication blob, the attacker, **192.168.1.11**, initiates a **new SMB session toward the target machine 192.168.4.12**,  just as it did with the victim machine **192.168.4.16**. See packets **56-60**.
 
-Packet **65** shows that the initial SMB session was terminated once the credentials were captured.
-
-The attacker then begins preparing the relay connection.
+Packet **65** shows that the first SMB session was terminated after the host's credentials were captured.
 
 | Packet Numbers | Description |
 |----------------|-------------|
-| 66–67 | NTLM negotiation between attacker and relay target |
+| 66–67 | NTLM negotiation between attacker and victim |
 
-These packets indicate that the attacker is preparing the SMB session required to relay the stolen credentials.
+The packets above indicate that the attacker is preparing the SMB session required to relay the stolen credentials.
 
 ---
 

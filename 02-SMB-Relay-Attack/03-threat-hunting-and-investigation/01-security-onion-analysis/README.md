@@ -1,8 +1,8 @@
 # Security Onion Investigations - SMB Relay
 
-This section documents the investigation performed in **Security Onion** after an alert related to suspicious **SMB activity** was triggered during the SMB Relay attack simulation.
+This section documents the investigation performed in **Security Onion** after an alert indicating suspicious **SMB activity** was triggered during the SMB Relay attack simulation.
 
-The analysis focuses on understanding how the captured NTLM authentication was relayed from the victim system to a second target machine.
+The analysis focuses on understanding how the captured NTLM authentication was relayed from the victim system to a secondary target host.
 
 ---
 
@@ -10,7 +10,7 @@ The analysis focuses on understanding how the captured NTLM authentication was r
 
 ![alt text](<Figure 16.png>)
 
-During the attack simulation, Security Onion generated an alert associated with suspicious SMB traffic. Investigation of the SMB logs revealed a sequence of connections that clearly illustrates the **NTLM relay attack chain**.
+During the attack, Security Onion generated an alert associated with suspicious SMB traffic. Investigation of the SMB logs revealed a sequence of connections that clearly illustrates the **NTLM relay attack chain**.
 
 ![alt text](<Figure 17.png>)
 
@@ -38,7 +38,7 @@ The **IPC$ share** is commonly used during SMB authentication negotiations and i
 
 In this case, the connection was triggered after the attacker responded to a **poisoned name resolution request**, causing the victim to attempt authentication against the rogue SMB service. 
 
-Immediately afterward, the logs show the attacker machine **192.168.1.11** initiating a new SMB session toward another legitimate host **192.168.4.12**, this time targeting the administrative share: 
+Immediately afterward, the logs show the attacker machine **192.168.1.11** initiating a new SMB session with another legitimate host **192.168.4.12**, this time targeting the administrative share: 
 
 ``` \\192.168.4.12\ADMIN$ ``` 
 
@@ -46,7 +46,7 @@ Unlike IPC$, the **ADMIN$ share maps to the Windows directory (`C:\Windows`) and
 
 This transition from **IPC$ to ADMIN$** strongly indicates that the attacker successfully **relayed the captured NTLM authentication from 192.168.4.16 to 192.168.4.12**, allowing the attacker to authenticate as the victim **without knowing the password**. 
 
-Additionally, the accessing of **ADMIN$** file share indicates that the credentials belonged to a priviledge administrator. THis grants the attacker with **elevated priviledges**, on at least for 192.168.4.12, possibly other hosts in the network.
+Additionally, the accessing of **ADMIN$** file share indicates that the credentials belonged to a priviledge administrator. This grants the attacker with **elevated priviledges**, at least for 192.168.4.12, possibly other hosts in the network.
 
 --- 
 
@@ -83,7 +83,7 @@ The presence of this traffic strongly suggests **lateral movement enabled by the
 
 --- 
 
-## Investigation Summary 
+## Conclusion 
 
 The Security Onion logs provide clear evidence of the NTLM relay attack chain: 
 
