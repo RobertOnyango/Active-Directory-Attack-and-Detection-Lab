@@ -2,7 +2,7 @@
 
 ## 📝 Full Write-up
 
-[Medium Article – Active Directory Attack Simulation and AI-Assisted Threat Detection with Popular SIEM Tools – Part 4]()
+[Medium Article – Active Directory Attack Simulation and AI-Assisted Threat Detection with Popular SIEM Tools – Part 4](https://robertmark94.medium.com/active-directory-attack-simulation-and-ai-assisted-threat-detection-with-popular-siem-tools-part5-ab502c7d281f)
 
 ## 📌 Overview
 IPv6 introduces an often-overlooked attack surface in Windows environments where IPv4 may appear well-secured. When IPv6 is enabled by default, attackers can abuse rogue router advertisements and DNS spoofing to position themselves as a man-in-the-middle without requiring direct network compromise. This attack path enables credential interception and relay by exploiting Windows Proxy Auto Discocery (WPAD) even in networks that rely primarily on IPv4.
@@ -21,15 +21,42 @@ The attack was simulated in an Active Directory environment and monitored with:
 - `/pcap-examples/` → SMB negotiation and NTLM authentication packet captures (screenshots)
 - `/detection-notes/` → Detection logic, limitations, and tuning considerations
 
-## 🔎 Step-by-Step Lab (What I did)
+---
 
-**Step 1: Attack Simulation**  
-- Deployed mitm6 to send rogue ICMPv6 router advertisements
-- Positioned the attacker as the default IPv6 DNS server for the domain
-- Abused WPAD over IPv6 to redirect client traffic
-- Captured NTLM authentication attempts using Responder
-- Relayed captured credentials to internal services
-- Achieved unauthorized access, information disclosure, and privilege escalation
+## ⚔️ Attack Simulation
+
+1. **Rogue IPv6 Network Injection**  
+   The attacker uses `mitm6` to send malicious IPv6 Router Advertisements (RA), causing victims to automatically configure the attacker as their IPv6 DNS server.
+
+2. **WPAD Spoofing**  
+   The victim queries for `wpad` to discover proxy settings.  
+   The attacker responds with a malicious WPAD (PAC) file, configuring the attacker’s machine as the system proxy.
+
+3. **Traffic Interception via Proxy**  
+   The victim routes web traffic through the attacker-controlled proxy as defined in the PAC file.
+
+4. **Forced NTLM Authentication**  
+   The attacker responds with a `407 Proxy Authentication Required` message, triggering the victim to automatically send NTLM authentication credentials.
+
+5. **NTLM Relay to Target Service**  
+   Captured NTLM authentication is relayed in real time to a target service (e.g., LDAPS on the Domain Controller) using `ntlmrelayx`.
+
+6. **Authenticated Action Execution**  
+   Depending on permissions, the attacker performs actions such as:
+   - Creating a machine account (via Machine Account Quota)
+   - Configuring Resource-Based Constrained Delegation (RBCD)
+   - Enumerating domain information
+
+7. **Optional Privilege Escalation**  
+   If higher-privileged credentials are relayed, the attacker may:
+   - Create user accounts  
+   - Modify directory objects  
+   - Gain elevated access within the domain
+
+8. **Cleanup and Evasion**  
+   The attacker can restore modified Active Directory attributes using generated restore files, reducing visible indicators of compromise.
+
+---
 
 **Step 2: Evidence Collection**
 - Captured ICMPv6 Router Advertisement traffic
