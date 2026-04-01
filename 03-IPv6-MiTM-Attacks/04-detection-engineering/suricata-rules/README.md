@@ -65,8 +65,8 @@ Investigations revelead that there were two indicators of DNS tampering and the 
 
 ```
 alert udp any 5353 -> any 5353 (
-    msg:"mDNS traffic detected (DNS failure);
-    sid: 300004;
+    msg:"mDNS traffic detected (DNS failure)";
+    sid:300004;
     priority:2;
     rev:1;
 )
