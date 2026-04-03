@@ -1,5 +1,5 @@
 title: Suspicious NTLM Logons
-description: Detect successfull logons in the domain from non-domain hosts via the network
+description: Detect successful logons from devices only on NTLM without any Kerberos associated with the Source IP
 id: ab1cafa7-250a-4123-aff6-aefac1533dbc
 status: test
 logsource:
@@ -11,8 +11,6 @@ detection:
     Logon: 3
     Authentication_Package: NTLM
   selection2:
-    Source_Network_Address:
-     - "192.168.4.0/24"
-     - "127.0.0.1"
+    Authentication_Package: Kerberos
   condition: selection1 and not selection2
 level: high

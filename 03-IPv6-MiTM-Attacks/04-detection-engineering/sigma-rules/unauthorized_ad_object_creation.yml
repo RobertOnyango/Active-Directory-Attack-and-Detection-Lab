@@ -1,0 +1,36 @@
+title: Suspicious NTLM Authentication logons
+description: Detect successful NTL logons
+id: e2304b0a-197c-40f6-96eb-b3d3b8872615
+status: test
+logsource:
+  product: windows
+  service: security
+detection:
+  selection:
+    EventCode: 4624
+    Logon: 3
+    Authentication_Package: NTLM
+  condition: selection
+---
+title: Computer object created
+description: Detect AD computer object successful creation
+id: 6c86f0e0-a092-4994-9550-7ebb673551f1
+status: test
+logsource:
+  product: windows
+  service: security
+detection:
+  selection:
+    EventCode: 4741
+  condition: selection
+---
+title: Computer object created after NTLM authentication by source IP
+correlation: 
+  type: event_count
+  rules: 
+    - e2304b0a-197c-40f6-96eb-b3d3b8872615
+    - 6c86f0e0-a092-4994-9550-7ebb673551f1
+  group_by: Source_Network_Address
+  timespan: 5s
+  condition: 
+    gte: 1
