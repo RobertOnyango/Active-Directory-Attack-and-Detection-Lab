@@ -48,9 +48,9 @@ index="windowseventlogs" (EventCode=4624 OR EventCode=4720)
 This rule detects scenarios where a single host receives network logons (Event ID 4624, Logon Type 3) from multiple distinct source IP addresses. While some administrative or remote access scenarios may produce similar patterns, this behavior can also indicate credential relay, lateral movement, or unauthorized access using shared credentials. In the context of NTLM-based attacks, this may reflect an attacker relaying authentication from one system while legitimate access occurs from another, making it a valuable correlation signal when combined with other detections.
 
 ```
-index=windowseventlogs EventCode=4624 Logon_Type=3
-| stats dc(Source_Network_Address) as unique_ips values(Source_Network_Address) by Workstation_Name
-| where unique_ips > 1
+index=windowseventlogs EventCode=4624 Logon_Type=3 Workstation_Name!="-"
+| stats dc(Source_Network_Address) as unique_ips_count values(Source_Network_Address) as SourceIPs by Workstation_Name
+| where unique_ips_count > 1
 ```
 
 #### NOTE: What is the 'Impersonation Level' in Windows?
