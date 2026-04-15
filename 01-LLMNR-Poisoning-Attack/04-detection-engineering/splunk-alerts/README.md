@@ -6,13 +6,11 @@ Investigation of the observed activity in the domain and the artifacts subsequen
 
 ## 1. Detect authentication to unauthorized servers using explicit credentials
 
-During normal LLMNR attacks, the victim does not explicitly supply credentials to the rogue server, rather, Windows auto-uses the current logon session. However, we do see that the event ID 4648 is generated on Desktop-1, by an IP address that's neither the expected loopback addresses IPv4 127.0.0.1 and IPv6 ::1 nor the management server, the Domain Controller 192.168.4.10. This indicates the the victim user entered his/her credentials, an edge case that we must account and prepare for.
+During normal LLMNR attacks, the victim does not explicitly supply credentials to the rogue server, rather, Windows auto-uses the current logon session. However, in this instance, Event ID 4648 is generated on Desktop-1. The Network Address field (the destination) contains an IP that matches neither the expected loopback addresses (127.0.0.1 or ::1) nor the management server/Domain Controller (192.168.4.10).
 
-Event ID 4648 is triggered on the machine that is supplying the credentials i.e. ComputerName field. These details are also captured in the 'Account whose credentials were used' section. 
+This indicates the the victim manually entered their credentials, an edge case that we must account for. Event ID 4648 is triggered on the source machine that is supplying the credentials (indicated in the ComputerName field), while the 'Account whose credentials were used' section captures the specific identity provided. 
 
-The Network_Address and the Subject section, where the Account_Name field is located, is the UID of the host whose process requested the credentials. In our case, this the rogue server the victim is trying to connect to.
-
-The premise of this rule is to answer the question: Should our cleint machines be supplying credentials to the network address?
+In this scenario, the Network Address represents the rogue server the victim attempted to access. The core premise of this detection rule is to determine: **Should our client machines be supplying explicit credentials to this specific network address?**
 
 ```
 index="windowseventlogs" EventCode=4648 Network_Address != "127.0.0.1" Network_Address != "-" Network_Address != "192.168.4.10"
@@ -22,9 +20,9 @@ index="windowseventlogs" EventCode=4648 Network_Address != "127.0.0.1" Network_A
 
 ---
 
-## 2. Alert on outbound sysmon SMB Connections
+## 2. Alert on numerous outbound sysmon SMB Connections from one host from a specific source IP
 
-For each 10-minute window and each source IP, tell me how many unique destinations were contacted and what those destinations were. SMB connections need to be consistent with the role-assigned to the user identity. In the lab, if the destination of an SMoutbpoB connection is a workstation, this indicates abnormal activity. 
+For each 10-minute window and each source IP, tell me how many unique destinations were contacted and what those destinations were. SMB connections need to be consistent with the role-assigned to the user identity. In the lab, if the destination of an SMB connection is a workstation, this indicates abnormal activity. 
 
 ```
 index="sysmon" EventCode=3 DestinationPort=445 DestinationIp!="192.168.4.10"
