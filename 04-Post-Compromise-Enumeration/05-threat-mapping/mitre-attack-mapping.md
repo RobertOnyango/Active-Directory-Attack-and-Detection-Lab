@@ -1,0 +1,11 @@
+## MITRE ATT&CK Mapping
+
+The following table maps the observed attacker behaviors during the lab to the MITRE ATT&CK framework.
+
+| Tactic | Technique | ID | Observed Activity | SOC Relevance |
+|---|---|---|---|---|
+| Discovery | Remote System Discovery | T1018 | The attacker performed network reconnaissance using Nmap to identify live hosts, open ports, and exposed services within the Active Directory environment. Following remote access, native system commands such as `arp -a`, `hostname`, `ipconfig`, and `net view` were used for additional host and network discovery. | Detectable through spikes in incomplete TCP handshakes, port scanning activity, reverse DNS lookups, and execution of reconnaissance commands from unauthorized systems. |
+| Lateral Movement | Remote Services: Remote Desktop Protocol | T1021.001 | The attacker attempted remote access to internal systems using valid credentials over the Remote Desktop Protocol (RDP). | Detectable via RDP connection attempts, Logon Type 10 events, unusual source IP addresses, and authentication anomalies. |
+| Lateral Movement | Remote Services: Windows Remote Management | T1021.006 | The attacker used the Evil-WinRM tool to establish remote PowerShell sessions on the victim host using compromised domain credentials. This resulted in the creation of `wsmprovhost.exe` followed by execution of reconnaissance commands. | Detectable via NTLM-authenticated network logons, creation of `wsmprovhost.exe`, remote PowerShell activity, and suspicious parent-child process relationships. |
+| Discovery | Account Discovery: Domain Account | T1087.002 | The attacker attempted to deploy PowerView and SharpHound/BloodHound tooling to enumerate domain users, privileged accounts, and Active Directory relationships. | Detectable via suspicious PowerShell activity, creation/upload of offensive tooling, LDAP enumeration behavior, and unusual authentication patterns. |
+| Discovery | Permission Groups Discovery: Domain Groups | T1069.002 | The attacker attempted to enumerate domain groups and privileged memberships using Active Directory enumeration tooling. | Detectable through LDAP queries, PowerShell logging, Sysmon file creation events, and abnormal enumeration behavior originating from non-administrative systems. |
