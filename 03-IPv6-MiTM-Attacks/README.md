@@ -16,80 +16,180 @@ The attack was simulated in an Active Directory environment and monitored with:
 - **Splunk (Windows Event Logs & Sysmon)**
 - **Wireshark (packet analysis)**
 
-## 📂 Detection Artifacts (Repository Structure)
-- `/splunk-queries/` → SPL queries detecting anomalous NTLM network logons (Event ID 4624, Logon Type 3)
-- `/pcap-examples/` → SMB negotiation and NTLM authentication packet captures (screenshots)
-- `/detection-notes/` → Detection logic, limitations, and tuning considerations
+The objective of the lab is to demonstrate:
+- How IPv6 infrastructure abuse occurs in modern networks
+- How NTLM relay attacks leverage trusted protocol behavior
+- The telemetry generated during the attack lifecycle
+- Detection opportunities across network and endpoint telemetry
+- Challenges of detecting protocol abuse in enterprise environments
+
+---
+
+## 📂 Repository Structure
+
+This repository is organized to reflect the lifecycle of a security investigation.
+
+| Folder | Purpose |
+|------|------|
+| attack-simulation | Steps used to perform the IPv6 MitM attack |
+| telemetry-analysis | Network and endpoint artifacts generated during the attack |
+| threat-hunting-and-investigation | Investigation steps and analysis queries |
+| detection-engineering | Detection rules for identifying attack behavior |
+| threat-mapping | MITRE ATT&CK mapping |
 
 ---
 
 ## ⚔️ Attack Simulation
 
-1. **Rogue IPv6 Network Injection**  
-   The attacker uses `mitm6` to send malicious IPv6 Router Advertisements (RA), causing victims to automatically configure the attacker as their IPv6 DNS server.
+The attack was performed from a Kali Linux attacker machine using:
+- `mitm6`
+- `ntlmrelayx`
 
-2. **WPAD Spoofing**  
-   The victim queries for `wpad` to discover proxy settings.  
-   The attacker responds with a malicious WPAD (PAC) file, configuring the attacker’s machine as the system proxy.
+### Steps
 
-3. **Traffic Interception via Proxy**  
-   The victim routes web traffic through the attacker-controlled proxy as defined in the PAC file.
-
-4. **Forced NTLM Authentication**  
-   The attacker responds with a `407 Proxy Authentication Required` message, triggering the victim to automatically send NTLM authentication credentials.
-
-5. **NTLM Relay to Target Service**  
-   Captured NTLM authentication is relayed in real time to a target service (e.g., LDAPS on the Domain Controller) using `ntlmrelayx`.
-
-6. **Authenticated Action Execution**  
-   Depending on permissions, the attacker performs actions such as:
-   - Creating a machine account (via Machine Account Quota)
-   - Configuring Resource-Based Constrained Delegation (RBCD)
-   - Enumerating domain information
-
-7. **Optional Privilege Escalation**  
-   If higher-privileged credentials are relayed, the attacker may:
-   - Create user accounts  
-   - Modify directory objects  
-   - Gain elevated access within the domain
-
-8. **Cleanup and Evasion**  
-   The attacker can restore modified Active Directory attributes using generated restore files, reducing visible indicators of compromise.
+1. Attacker joins the internal network and introduces itself as a rogue IPv6 DNS server using ICMPv6 Router Advertisements.
+2. Victim systems automatically configure IPv6 settings through SLAAC and begin trusting the attacker-controlled host for DNS resolution.
+3. Victim systems request the location of the `wpad.dat` file from the rogue DNS server.
+4. Attacker responds with a malicious WPAD configuration pointing victims to an attacker-controlled proxy.
+5. Victim systems attempt web access through the rogue proxy.
+6. Attacker responds with `HTTP 407 Proxy Authentication Required`.
+7. Windows automatically sends NTLM authentication over the network.
+8. Captured NTLM authentication is relayed to the Domain Controller over LDAPS using `ntlmrelayx`.
+9. Successful authentication is used to:
+   - Create unauthorized computer objects
+   - Create unauthorized user accounts
+   - Abuse delegated Active Directory permissions
 
 ---
 
-**Step 2: Evidence Collection**
-- Captured ICMPv6 Router Advertisement traffic
-- Observed DHCPv6 requests and rogue DNS responses
-- Identified NTLM authentication over the network using:
-    - NTLMSSP NEGOTIATE
-    - NTLMSSP CHALLENGE
-    - NTLMSSP AUTH
-- Correlated authentication activity with unexpected IPv6 source addresses
-- Validated protocol-level behavior using Wireshark
+## 📡 Telemetry Artifacts
 
-**Step 3: Detection and Analysis**
-- Suricata generated alerts for suspicious IPv6 and SMB activity
-- Splunk identified NTLM-based network logons (Event ID 4624, Logon Type 3)
-- Detected authentication from unexpected IP addresses and mismatched workstation identities
-- Correlated NTLM activity with preceding IPv6 infrastructure manipulation
-- Confirmed non-interactive, impersonation-based authentication indicative of relay behavior
+The attack generated observable artifacts across both network and endpoint telemetry.
 
-**Step 4: Enterprise Recommendations**
-- Disable IPv6 where it is not required
-- Block rogue IPv6 router advertisements at the network layer
-- Disable or restrict WPAD usage
-- Enforce SMB signing across all systems
-- Limit or phase out NTLM in Kerberos-based environments
-- Monitor for NTLM authentication over the network as a high-risk signal
+Examples include:
+
+- ICMPv6 Router Advertisements from unauthorized systems
+- DHCPv6 Solicit and Request traffic
+- WPAD (`wpad.dat`) discovery requests
+- DNS queries sent to unauthorized DNS infrastructure
+- Increased LLMNR and mDNS traffic caused by DNS instability
+- NTLM-authenticated network logons (Event ID 4624 – Logon Type 3)
+- New computer object creation (Event ID 4741)
+- New user account creation (Event ID 4720)
+- Password reset activity (Event ID 4724)
+
+Artifacts were analyzed using:
+- Suricata IDS alerts
+- Splunk SIEM queries
+- Wireshark packet captures
+
+Screenshots and analysis are available in the **telemetry-analysis/** directory.
+
+---
+
+## 🔎 Investigation & Threat Hunting
+
+Investigation was performed through correlation of:
+- IPv6 network telemetry
+- Authentication activity
+- Active Directory audit logs
+- Packet captures
+
+Examples include:
+
+- Identification of rogue IPv6 Router Advertisements
+- Analysis of DHCPv6 negotiation activity
+- Investigation of WPAD requests and HTTP proxy abuse
+- Detection of NTLM-only authentication patterns
+- Correlation of NTLM logons with Active Directory object creation
+- Identification of authentication originating from unexpected source systems
+- Wireshark analysis of IPv6 infrastructure abuse and DNS manipulation
+
+Investigation queries and analysis steps are documented in the **threat-hunting-and-investigation/** directory.
+
+---
+
+## 🚨 Detection Engineering
+
+Detection rules were developed to identify suspicious IPv6 infrastructure abuse and NTLM relay activity.
+
+These are:
+
+### Suricata Detection Rules
+
+- Detection of ICMPv6 Router Advertisements
+- Detection of DHCPv6 traffic
+- Detection of WPAD discovery requests
+- Detection of DNS queries to unauthorized DNS servers
+- Detection of LLMNR and mDNS traffic anomalies
+
+### Splunk Detection Queries
+
+- NTLM-only authentication detection
+- Correlation of NTLM authentication with:
+  - Computer object creation
+  - User account creation
+- Detection of multiple source IPs authenticating to the same host
+
+All detection logic is available in the **detection-engineering/** directory.
+
+---
+
+## 🛡️ Enterprise Mitigations
+
+Recommended mitigations include:
+
+- Disable WPAD where unnecessary
+- Restrict or disable NTLM authentication
+- Prefer Kerberos authentication within Active Directory
+- Enable LDAP signing and channel binding
+- Disable IPv6 if not required operationally
+- Monitor ICMPv6 Router Advertisements
+- Restrict DHCPv6 activity to approved infrastructure
+- Implement network segmentation
+- Monitor Active Directory object creation events
+- Harden delegated permissions and ACLs
+
+---
+
+## 🧑‍💻 Why This Matters
+
+IPv6 MitM attacks abuse legitimate protocol behavior rather than software vulnerabilities.
+
+Attackers leverage:
+- Automatic IPv6 configuration
+- Trusted network discovery mechanisms
+- Legacy NTLM authentication behavior
+
+As a result:
+- The attack can occur silently
+- Traditional IPv4 monitoring may miss critical activity
+- Detection requires telemetry correlation across multiple layers
+
+rather than relying solely on traditional signature-based detections.
+
+---
+
+## 💻 Lab Takeaways
+
+This lab demonstrates several real-world detection challenges:
+
+- IPv6 introduces an often-unmonitored attack surface within enterprise environments.
+- Windows systems prioritize IPv6 by default even in primarily IPv4 environments.
+- NTLM relay attacks may generate minimal failed authentication activity.
+- Multiple low-severity alerts can combine into a high-confidence compromise.
+- Correlating network telemetry with Active Directory logs is essential for accurate investigation.
+
+---
 
 ## Next Steps
 This repository is part of a growing Active Directory attack & detection series, including:
 - LLMNR Poisoning
 - SMB Relay
 - IPv6 Attacks (this repo)
+- Post Enumeration Exploitation
 - Pass-the-Hash
 - Kerberoasting
 - Lateral Movement
 
-Each lab follows a consistent structure focused on **attack simulation, evidence collection, detection engineering, and SOC-ready analysis**.
+---
