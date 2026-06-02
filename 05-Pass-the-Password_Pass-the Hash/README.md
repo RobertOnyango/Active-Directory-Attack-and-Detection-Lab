@@ -2,7 +2,7 @@
 
 ## 📝 Full Write-up
 
-[Medium Article – Active Directory Attack Simulation and AI-Assisted Threat Detection with Popular SIEM Tools – Part 7](ADD_MEDIUM_LINK_HERE)
+[Medium Article – Active Directory Attack Simulation and AI-Assisted Threat Detection with Popular SIEM Tools – Part 7](https://medium.com/@robertmark94/active-directory-attack-simulation-and-ai-assisted-threat-detection-with-popular-siem-tools-part7-e0b009426032)
 
 ## 📌 Overview
 
