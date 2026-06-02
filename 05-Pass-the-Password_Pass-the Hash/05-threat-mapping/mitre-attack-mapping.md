@@ -1,0 +1,11 @@
+## MITRE ATT&CK Mapping
+
+The following table maps the observed attacker behaviors during the lab to the MITRE ATT&CK framework.
+
+| Tactic | Technique | ID | Observed Activity | SOC Relevance |
+|---|---|---|---|---|
+| Credential Access | OS Credential Dumping: Security Account Manager (SAM) | T1003.002 | Event ID 4656 investigations revealed access requests against SAM-related objects (`SAM_SERVER` and `SAM_DOMAIN`) under the security context of the compromised account. | Detectable through Event ID 4656 object access requests, SAM object monitoring, and correlation with authentication activity. |
+| Defense Evasion / Lateral Movement | Use Alternate Authentication Material: Pass the Hash | T1550.002 | The attacker attempted to authenticate to remote systems using NTLM password hashes rather than plaintext credentials. | Detectable through NTLM-authenticated network logons, unusual authentication patterns, and authentication attempts against multiple hosts. |
+| Initial Access / Persistence / Privilege Escalation / Defense Evasion | Valid Accounts: Domain Accounts | T1078.002 | The attacker used a legitimate domain account  obtained during previous attack phases to authenticate to multiple systems within the domain. | Detectable through successful logons from unusual source hosts, authentication to multiple systems, and abnormal account usage patterns. |
+| Lateral Movement | Remote Services: SMB/Windows Admin Shares | T1021.002 | The attacker leveraged SMB-based administrative services and tooling such as CrackMapExec, PsExec, and Impacket to authenticate and move laterally between systems. | Detectable through SMB traffic on TCP/445, NTLM-only authentication activity, and workstation-to-workstation authentication attempts. |
+| Discovery | Account Discovery: Domain Account | T1087.002 | The attacker leveraged previously gathered account information to identify systems where compromised credentials could be reused. | Detectable through LDAP enumeration activity, account discovery commands, PowerShell logging, and Active Directory auditing. |
