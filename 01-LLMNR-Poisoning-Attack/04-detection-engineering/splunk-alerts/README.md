@@ -27,9 +27,9 @@ For each 10-minute window and each source IP, tell me how many unique destinatio
 ```
 index="sysmon" EventCode=3 DestinationPort=445 DestinationIp!="192.168.4.10"
 | bin _time span=10m
-| stats dc(DestinationIp) as unique_destinations, values(DestinationIp) as DestinationIps by _time, SourceIp
-| where unique_destinations >=2
-| table _time, SourceIp, unique_destinations, DestinationIps
+| stats dc(DestinationIp) as unique_destinations_count, values(DestinationIp) as DestinationIps by _time, SourceIp
+| where unique_destinations_count >=2
+| table _time, SourceIp, unique_destinations_count, DestinationIps
 ```
 
 ---

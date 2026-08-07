@@ -19,7 +19,7 @@ title: SMB connection to non-domain host
 description: Detect outbound SMB connections to non-DC host
 id: 825d0dd4-aac5-467b-8273-a45baf99c647
 status: test
-logsource: 
+logsource:
   product: network_connection
   service: windows
 detection:
@@ -38,7 +38,7 @@ id: 1d9a1f49-7282-4c09-b98a-edff6ce08e99
 status: experimental
 correlation:
   type: temporal
-  rules: 
+  rules:
     - 4a7f69f6-6f93-47b3-b6ca-10f6e900c4cb
     - 825d0dd4-aac5-467b-8273-a45baf99c647
   timespan: 5m
