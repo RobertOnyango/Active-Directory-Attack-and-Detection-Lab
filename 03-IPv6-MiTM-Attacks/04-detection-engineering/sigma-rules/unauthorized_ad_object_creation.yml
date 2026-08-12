@@ -1,5 +1,5 @@
 title: Suspicious NTLM Authentication logons
-description: Detect successful NTL logons
+description: Detect successful NTLM authenticated logons
 id: e2304b0a-197c-40f6-96eb-b3d3b8872615
 status: test
 logsource:
@@ -25,12 +25,13 @@ detection:
   condition: selection
 ---
 title: Computer object created after NTLM authentication by source IP
-correlation: 
+id: 1f404f74-cae9-4b51-9fea-c75cdb125705
+correlation:
   type: event_count
-  rules: 
+  rules:
     - e2304b0a-197c-40f6-96eb-b3d3b8872615
     - 6c86f0e0-a092-4994-9550-7ebb673551f1
   group_by: Source_Network_Address
   timespan: 5s
-  condition: 
+  condition:
     gte: 1
