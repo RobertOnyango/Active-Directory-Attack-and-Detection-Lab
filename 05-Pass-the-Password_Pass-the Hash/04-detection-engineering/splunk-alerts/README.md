@@ -51,7 +51,7 @@ For this lab, the Domain Controller (`192.168.4.10`) is treated as the designate
 ```spl
 index="windowseventlogs" (EventCode=4624 OR EventCode=4625)
 | stats values(EventCode) as Auth_Events values(Account_Name) as Credentials_Used values(ComputerName) as Devices_Probed dc(ComputerName) as Host_Count by Source_Network_Address
-| where Source_Network_Address!="-" AND Source_Network_Address!="192.168.4.10" AND Host_Count > 1
+| where Source_Network_Address!="-" AND Source_Network_Address!="127.0.0.1" AND Source_Network_Address!="::1" AND Source_Network_Address!="192.168.4.10" AND Host_Count > 1
 ```
 
 ### Detects
