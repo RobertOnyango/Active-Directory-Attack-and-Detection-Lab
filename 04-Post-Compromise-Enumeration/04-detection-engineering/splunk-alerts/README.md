@@ -15,6 +15,7 @@ The following detection identifies the process spawned for the WinRM session to 
 ```spl
 index="windowseventlogs" EventCode=4688 Creator_Process_Name="*wsmprovhost.exe"
 | stats count by ComputerName, New_Process_Name, Creator_Process_Name, Account_Name
+| where count > 1
 ```
 
 This detection helps identify:

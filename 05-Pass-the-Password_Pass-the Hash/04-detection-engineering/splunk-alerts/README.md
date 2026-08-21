@@ -78,7 +78,7 @@ The objective is to determine whether sensitive object interactions occurred wit
 ### Detection Rule
 
 ```spl
-index="windowseventlogs" Account_Name=ronyango (EventCode=4656 OR (EventCode=4624 Authentication_Package=NTLM Logon_Type=3))
+index="windowseventlogs" (EventCode=4656 OR (EventCode=4624 Authentication_Package=NTLM Logon_Type=3))
 | stats values(EventCode) as EventCodes values(ComputerName) as Hosts values(Account_Name) as Account values(Source_Network_Address) as SourceIP values(Object_Name) as Objects values(Process_Name) as Processes values(Accesses) as AccessRights min(_time) as FirstSeen max(_time) as LastSeen by Logon_ID
 | where mvcount(EventCodes)>1
 ```

