@@ -2,7 +2,7 @@
 
 ## 📝 Full Write-up
 
-[Medium Article – Active Directory Attack Simulation and AI-Assisted Threat Detection with Popular SIEM Tools – Token Impersonation]
+[Medium Article – Active Directory Attack Simulation and AI-Assisted Threat Detection with Popular SIEM Tools – Token Impersonation](https://medium.com/@robertmark94/active-directory-attack-simulation-and-ai-assisted-threat-detection-with-popular-siem-tools-part8-f7580d0a52f7?sharedUserId=robertmark94)
 
 ## 📌 Overview
 

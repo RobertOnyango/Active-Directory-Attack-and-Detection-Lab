@@ -8,9 +8,13 @@ The page below documents the steps taken in sequence during the investigation of
 
 ### Alert Overview
 
-No alert was triggered in Splunk, which raised an alarm. Investigation led to the *IPv6 MiTM Source IPs with only NTLM-auth logons (No Kerberos detected)* detection rule. Adding the rule in the search query showed the following results <defense 3>
+No alert was triggered in Splunk, which raised an alarm. Investigation led to the *IPv6 MiTM Source IPs with only NTLM-auth logons (No Kerberos detected)* detection rule. Adding the rule in the search query showed the following results.
 
-We can see the rule should trigger based on the results above, however, it does not. This highlights the importance of testing your detection rules after writing them. An improvement to the **rule trigger conditions** was required as below <defense 4>
+![alt text](defense3.png)
+
+We can see the rule should trigger based on the results above, however, it does not. This highlights the importance of testing your detection rules after writing them. An improvement to the **rule trigger conditions** was required as below.
+
+![alt text](defense4.png)
 
 The alert should be triggered per each result however, to reduce alert fatigue, the throttle condtions that the alerts should be suppressed when resultant log has a unique combination of the pairing Source_Network_Address, Account_Name and ComputerName are observed within a span of 1 hour. 
 
@@ -20,6 +24,8 @@ In simpler terms:
 - All while adhering the spirit of the rule that only Source IPs that have no Kerberos authentication are alerted as **CRITICAL** alerts.
 
 **First artifact**: Malicious IP Address 192.168.4.11 authenticating to domain host using NTLM-auth only.
+
+---
 
 ### Investigation steps
 
@@ -31,16 +37,19 @@ index="windowseventlogs" Source_Network_Address="192.168.4.14"
 
 We see 3 events, all successful logons (EventCode=4624, Authentication_Package=NTLM). 
 
-The next step is to know what happened before and during the logon sessions. We do this using the Timestamps as highlighted below. <defense 5>
+The next step is to know what happened before and during the logon sessions. We do this using the Timestamps as highlighted below.
+
+![alt text](defense5.png)
 
 Filter out all the Events that happened on the attacked machine, Desktop-1, between 9:42AM and 10:00AM, 08/24/2026 (Estimated time of compromise)
 
 ```spl
 index="windowseventlogs" ComputerName="DESKTOP-1.mydomain.local"
 ``` 
-<defense 6>
 
-<defense 7>
+![alt text](defense6.png)
+
+![alt text](defense7.png)
 
 1001 and events returned, we have to fine-tune the results to best build an attack chain. We know that 3 events, (NTLM-authenticated logons) led us here, let's further ammend our search query to know extract eavents recoreded 30 seconds after each login.
 
@@ -50,7 +59,7 @@ We need to determine the Events that occured during the NTLM-successful logons d
 index="windowseventlogs" ComputerName="DESKTOP-1.mydomain.local" EventCode=4624 Authentication_Package=NTLM
 ```
 
-<defense 8>
+![alt text](defense8.png)
 
 Proceed to filter all the events that have the extracted logon ID using the query below:
 
@@ -60,7 +69,7 @@ index="windowseventlogs" ComputerName="DESKTOP-1.mydomain.local" (Logon_ID=0x44A
 | sort -_time
 ```
 
-<defense 9>
+![alt text](defense9.png)
 
 Observe the following Event Codes:
 
@@ -74,7 +83,7 @@ Observe the following Event Codes:
 
 See the list of Privileges assigned during the insecure logon session.
 
-<defense 10>
+![alt text](defense10.png)
 
 Proceeding with the ivestigations, we use the highlighted Logon_IDs to find the internal processes that run during the sessions from Sysmon logs, using the query below.
 
@@ -82,7 +91,7 @@ Proceeding with the ivestigations, we use the highlighted Logon_IDs to find the 
 index="sysmon" (LogonId=0x44AC101 OR LogonId=0x44135A0 OR LogonId=0x44BB499)
 ```
 
-<defense 11>
+![alt text](defense11.png)
 
 We get no results here. 
 
@@ -97,13 +106,13 @@ index="sysmon" ComputerName="DESKTOP-1.mydomain.local" Image!="*SplunkUniversalF
 
 We observe what looks like a randomly generated executable file name that is being launched directly by the Service Control Manager and with the elevated context of NT AUTHORITY\SYSTEM which is basically the highest-ranking privileged account on Windows OS.
 
-<defense 12>
+![alt text](defense12.png)
 
 The process appears to crash but boot back up after a very short period. 
 
 There is also another process with more or less the same characteristics.
 
-<defense 13>
+![alt text](defense13.png)
 
 **Third Artifact**: Unauthrorized files, located directly ubder *C:\Windows* with randomly generated names launched directly by the SCM, *services.exe* and are running as *SYSTEM*, using the OS privileges (Highest privilege in Windows). These file names are:
 - fioLUfBp.exe
@@ -121,7 +130,7 @@ index="sysmon" ComputerName="DESKTOP-1.mydomain.local" (Image="*fioLUfBp.exe*" O
 | sort _time
 ```
 
-<defense 14>
+![alt text](defense14.png)
 
 The parent-child relationship also catches my eye. Normal Windows activity is:  `services.exe -> fioLUfBp.exe`
 But here we have: `services.exe -> eBfTlBzd.exe -> rundll32.exe` (Running as SYSTEM).
@@ -136,7 +145,7 @@ We need to figure out what security events are associated with these 'services' 
 index="windowseventlogs" ("*fioLUfBp.exe*" OR "*eBfTlBzd.exe*")
 ```
 
-<defense 15>
+![alt text](defense15.png)
 
 We see the following Event Codes:
 
@@ -159,7 +168,7 @@ Here we again find services with randomized names, running under %SYSTEMROOT% an
 - qkrYMCKsLKfWEFCc
 - VFzXKOBuQoQPpICb
 
-<defense 16>
+![alt text](defense16.png)
 
 **Fourth Artifact** Services that triggered *services.exe* to run the executables also have randomized file names which are: 
 - GFCoruhGsrYHYnaK
@@ -178,7 +187,7 @@ Run the search filter below:
 
 We see that the chain occurs within a matter of milliseconds indicating possible tool use or automated execution.
 
-<defense 17>
+![alt text](defense17.png)
 
 **Fifth Artifact** The temporal proximity between the service creation and the executables running strongly supports the hypothesis that the service installation and process creation were part of the same execution sequence. 
 
@@ -195,7 +204,7 @@ In addition to the above finding, correlation with the NTLM-authenticated sessio
 | sort _time
 ```
 
-<defense 19>
+![alt text](defense19.png)
 
 **LOLBIN INVESTIGATION**
 
@@ -205,17 +214,17 @@ We need to find out whether the attacker attempted to execute malicious code whi
 
 The command line as shown in the screenshot is `rundll32.exe` without any arguments. This is also suspicious because the binary needs to be given some argunments to run.
 
-<defense 18>
+![alt text](defense18.png)
 
 There's no alarming event from `rundll32.exe`.
 
 We proceed with the investigation by looking at the processes that executed immediately after the new services and LOLBIN above were spawned.
 
-<defense 20>
+![alt text](defense20.png)
 
 A key observation is the User again changes from SYSTEM to the Domain Administartor's context.
 
-<defense 21>
+![alt text](defense21.png)
 
 Proceed to investigate the events generated on the Host machine by the Domain Admin account. Focus on the Event codes using the following query:
 
@@ -227,12 +236,13 @@ Proceed to investigate the events generated on the Host machine by the Domain Ad
 
 Wee see the same relation: successful privileged logon (4624 + 4672), then Crendentials are read from Windows Credential Manager (5379).
 
-<defense 22>
-
+![alt text](defense22.png)
 
 **Unlikely path analysis**
 
-Suspected that the most recent rule, where one source IP successfully logs on to multiple hosts via NTLM authentication, but it did not.<defense 2a>
+Suspected that the most recent rule, where one source IP successfully logs on to multiple hosts via NTLM authentication, but it did not.
+
+![alt text](defense2a.png)
 
 ```spl
 index="windowseventlogs" EventCode=4624 Authentication_Package=NTLM Logon_Type=3
@@ -241,7 +251,9 @@ index="windowseventlogs" EventCode=4624 Authentication_Package=NTLM Logon_Type=3
 | sort - Host_Count
 ```
 
-Adjusting the rule to fire on one or more host as below, did indeed show the suspicious IP in question. <defense 2b>
+Adjusting the rule to fire on one or more host as below, did indeed show the suspicious IP in question. 
+
+![alt text](defense2b.png)
 
 ```spl
 index="windowseventlogs" EventCode=4624 Authentication_Package=NTLM Logon_Type=3

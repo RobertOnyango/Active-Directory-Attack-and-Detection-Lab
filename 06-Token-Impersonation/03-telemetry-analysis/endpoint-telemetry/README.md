@@ -10,13 +10,13 @@ The objective is to demonstrate how individual telemetry sources can be combined
 
 **First artifact**: Malicious IP Address 192.168.4.11 authenticating to domain host using NTLM-auth only.
 
-<defense 3>
+![alt text](defense3.png)
 
 ---
 
 **Second Artifact** The presense of Event ID 4672 and Event ID 4624 that is via NTLM authentication, *in the same timestamp*, raises so much concern. High-privileged successful logon autenticated via the insecure NTLM is a clear sign of compromise i.e. Insecure Privilege Escalation.
 
-<defense 9>
+![alt text](defense9.png)
 
 ---
 
@@ -24,7 +24,7 @@ The objective is to demonstrate how individual telemetry sources can be combined
 - fioLUfBp.exe
 - eBfTlBzd.exe
 
-<defense 13>
+![alt text](defense13.png)
 
 ---
 
@@ -33,7 +33,7 @@ The objective is to demonstrate how individual telemetry sources can be combined
 - qkrYMCKsLKfWEFCc
 - VFzXKOBuQoQPpICb
 
-<defense 16>
+![alt text](defense16.png)
 
 ---
 
@@ -44,13 +44,18 @@ We observe the bahviour, relationships and lifecycle of the suspicious executabl
 - Windows process `services.exe` executing them.
 - Executables calling and executing Windows internal binaries e.g. `WerFault.exe` and `rundll32.exe`.
 
-<defense 17>
+![alt text](defense17.png)
 
 ---
 
 **Sixth Artifact** The full attack chain from the insecure logon, specifically highlighting privileges assigned during the session the to the binary execution by the randomly named executable. We get this by combining Artifact Two and Artifact Five.
 
-<defense 10> <defense 19>
+
+![alt text](defense10.png)
+
+
+![alt text](defense19.png)
+
 
 - The compromised session possessed the capability to perform token manipulation.
 
