@@ -12,7 +12,7 @@ Instead, this detection focuses on identifying hosts that exclusively use NTLM w
 
 ```
 index="windowseventlogs" EventCode=4624 Logon_Type=3
-| stats values(Authentication_Package) as auth_methods by Source_Network_Address, Account_Name
+| stats values(Authentication_Package) as auth_methods by Source_Network_Address, Account_Name, ComputerName
 | where match(auth_methods, "NTLM") AND NOT match(auth_methods, "Kerberos")
 ```
 

