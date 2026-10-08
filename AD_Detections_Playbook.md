@@ -1,0 +1,1 @@
+Expected Outcome: A unified Splunk dashboard, reproducible attack execution, validated detections and a comprehensive Active_Directory_Detections_Playbook.md will provide tangible evidence of detection engineering capabilities.
