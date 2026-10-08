@@ -2,7 +2,7 @@
 
 ## 📝 Full Write-up
 
-Medium Article – Active Directory Attack Simulation and AI-Assisted Threat Detection with Popular SIEM Tools – Kerberoasting
+[Medium Article – Active Directory Attack Simulation and AI-Assisted Threat Detection with Popular SIEM Tools – Kerberoasting](https://robertmark94.medium.com/active-directory-attack-simulation-and-ai-assisted-threat-detection-with-popular-siem-tools-part9-1a24aa57b9ef)
 
 ---
 
