@@ -38,52 +38,7 @@ The objective of the lab is to demonstrate:
 
 ## Windows Authentication Mental Model
 
-USER
- │
- │ username + password
- ▼
-WINLOGON
- │
- │ coordinates interactive logon
- ▼
-LSASS
- │
- │ authentication packages
- ▼
-NEGOTIATE
- │
- ├───────────────────────┐
- │                       │
- ▼                       ▼
-KERBEROS                NTLM
- │                       │
- │                       │
- ▼                       ▼
-KDC/DC                  DC
- │                       │
- │                       │
- ▼                       ▼
-TGT                  Challenge/
- │                   Response
- │                       │
- │                       ▼
- │                    Validation
- │                       │
- └──────────┬────────────┘
-            │
-            ▼
-      Authentication
-         succeeds
-            │
-            ▼
-      Logon Session
-            │
-            ▼
-       Access Token
-            │
-            ▼
-       Authorization
-
+![alt text](image.png)
 ---
 
 ## 📂 Repository Structure
