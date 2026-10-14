@@ -19,8 +19,14 @@ The lab also suggests ways in which I, as a Security Analyst, can use AI and LLM
 - LLMNR Poisoning (Responder) @ `01-LLMNR-Poisoning-Attack`/
 - SMB Relay @ `/02-SMB-Relay-Attack/`
 - IPv6 Attacks @ `/03-IPv6-MiTM-Attacks/`
+- Post Compromise Enumeration @ `04-Post-Compromise-Enumeration`/
+- Pass-the-Hash @ `05-Pass-the-Password_Pass-the-Hash`/
+- Token-Impersonation @ `06-Token-Impersonation`/
+- Kerberoasting @ `07-Kerberoasting`/
+
 <!--
-- Pass-the-Hash
-- Kerberoasting
-- Lateral Movement (SMB, RDP)
+Other attacks that could not be simulated:
+- [Abusing GPP](https://stridergearhead.medium.com/gpp-attacks-ad-post-compromise-attack-44c7f447fb65)
+- [URL File Attacks](https://medium.com/@apareek99/active-directory-post-compromise-attack-url-file-attack-against-writable-share-65da2f85d057)
+- [Mimikatz](https://www.varonis.com/blog/what-is-mimikatz)
 -->
